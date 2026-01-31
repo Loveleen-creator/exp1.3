@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Drawing Tool</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #eef2f3; margin: 0; overflow: hidden; }
+        .toolbar { 
+            position: absolute; top: 20px; left: 20px; background: white; 
+            padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            display: flex; gap: 10px; z-index: 10;
+        }
+        svg { width: 100vw; height: 100vh; cursor: crosshair; background: #fff; }
+        button { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; background: #007bff; color: white; }
+        button:hover { background: #0056b3; }
+        .undo-btn { background: #6c757d; }
+        input[type="color"] { border: none; width: 40px; height: 40px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function DrawingTool() {
+            const [circles, setCircles] = useState([]);
+            const [color, setColor] = useState("#007bff");
+
+            // Event Handler: Tracking mouse clicks to draw
+            const handleCanvasClick = (e) => {
+                const newCircle = {
+                    x: e.clientX,
+                    y: e.clientY,
+                    color: color,
+                    id: Date.now()
+                };
+                // Adding new shape to state (Reactive UI update)
+                setCircles([...circles, newCircle]);
+            };
+
+            // Undo function: Removes the last element from the array
+            const undo = () => {
+                setCircles(circles.slice(0, -1));
+            };
+
+            return (
+                <div>
+                    <div className="toolbar">
+                        <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
+                        <button className="undo-btn" onClick={undo}>Undo</button>
+                        <button onClick={() => setCircles([])}>Clear Canvas</button>
+                        <span>Points: {circles.length}</span>
+                    </div>
+
+                    <svg onClick={handleCanvasClick}>
+                        {circles.map(c => (
+                            <circle 
+                                key={c.id} 
+                                cx={c.x} 
+                                cy={c.y} 
+                                r="20" 
+                                fill={c.color} 
+                                style={{ transition: 'all 0.2s ease' }}
+                            />
+                        ))}
+                    </svg>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<DrawingTool />);
+    </script>
+</body>
+</html>
